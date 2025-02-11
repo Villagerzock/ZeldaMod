@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "zelda",
+  "version": "${version}",
+  "name": "ZeldaMod",
+  "description": "A Library Mod that adds Game Engine like Features for Modders",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/zelda/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "net.villagerzock.projektarbeit.client.MainClient"
+    ],
+    "main": [
+      "net.villagerzock.projektarbeit.Main"
+    ]
+  },
+  "mixins": [
+    "zelda.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
