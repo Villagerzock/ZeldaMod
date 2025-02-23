@@ -1,0 +1,12 @@
+{
+  "comment.zelda.items": "Here are the Item Translations",
+  "item.zelda.acorn": "Acorn",
+
+  "comment.zelda.blocks": "Here are the Block Translations",
+
+  "comment.zelda.item_groups": "Here are the Item Group Translations",
+  "zelda.item_group.ingredients": "Ingredients",
+
+  "comment.zelda.miscellaneous": "Here are the GUI Text Translations",
+  "miscellaneous.zelda.quests": "Quests"
+}

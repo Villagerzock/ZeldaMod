@@ -1,0 +1,29 @@
+{
+  "title": "Test",
+  "body": "This is a test Quest",
+  "targets": [
+    [0,0,0],
+    [120,64,1024]
+  ],
+  "requirements": [
+    {
+      "type": "player_in_distance_to_block_pos",
+      "pos": [0,0,0],
+      "range": 10,
+      "then": {
+        "type": "remove_target",
+        "target": 0
+      }
+    },
+    {
+      "type": "player_in_distance_to_block_pos",
+      "pos": [120,64,1024],
+      "pos_type": "local",
+      "range": 10,
+      "then": {
+        "type": "remove_target",
+        "target": 1
+      }
+    }
+  ]
+}

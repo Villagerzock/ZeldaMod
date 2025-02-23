@@ -1,4 +1,134 @@
 package net.villagerzock.projektarbeit.quest;
 
-public class Quest {
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.villagerzock.projektarbeit.registry.Registries;
+import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.IHaveASerializerAndType;
+import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.ISerializer;
+import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.IType;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Quest implements IHaveASerializerAndType<Quest> {
+    private final Text Title;
+    private final Text Body;
+    private final BlockPos[] targets;
+    private final List<Requirement> requirements;
+
+    public Quest(Text title, Text body, BlockPos[] targets,List<Requirement> requirements) {
+        Title = title;
+        Body = body;
+        this.targets = targets;
+        this.requirements = requirements;
+    }
+    public List<Requirement> getRequirements() {
+        return requirements;
+    }
+
+    @Override
+    public ISerializer<Quest> getSerializer() {
+        return Serializer.INSTANCE;
+    }
+
+    @Override
+    public IType<Quest> getType() {
+        return Type.INSTANCE;
+    }
+
+    public Text getTitle() {
+        return Title;
+    }
+
+    public Text getBody() {
+        return Body;
+    }
+
+    public BlockPos[] getTargets() {
+        return targets;
+    }
+
+    public static class Type implements IType<Quest>{
+        public static final Type INSTANCE = new Type();
+        @Override
+        public ISerializer<Quest> getSerializer() {
+            return Serializer.INSTANCE;
+        }
+
+        @Override
+        public boolean shouldSendToClient() {
+            return true;
+        }
+    }
+    public static class Serializer implements ISerializer<Quest>{
+        public static final Serializer INSTANCE = new Serializer();
+        @Override
+        public void write(Quest object, PacketByteBuf byteBuf) {
+            byteBuf.writeText(object.getTitle());
+            byteBuf.writeText(object.getBody());
+            byteBuf.writeInt(object.getTargets().length);
+            for (BlockPos blockPos : object.getTargets()){
+                byteBuf.writeBlockPos(blockPos);
+            }
+            byteBuf.writeInt(object.requirements.size());
+            for (Requirement requirement : object.requirements){
+                byteBuf.writeIdentifier(requirement.getType().getType());
+                requirement.getSerializer().write(requirement,byteBuf);
+            }
+        }
+
+        @Override
+        public Quest read(JsonElement jsonElement) {
+            JsonObject object = jsonElement.getAsJsonObject();
+            Text title = Text.Serializer.fromJson(object.get("title"));
+            Text body = Text.Serializer.fromJson(object.get("body"));
+            JsonArray targetsArray = object.get("targets").getAsJsonArray();
+            BlockPos[] targets = new BlockPos[targetsArray.size()];
+            int i = 0;
+            for (JsonElement element : targetsArray){
+                JsonArray blockPosArray = element.getAsJsonArray();
+                targets[i] = ISerializer.serializeBlockPos(blockPosArray);
+                i++;
+            }
+            JsonArray requirementsArray = object.getAsJsonArray("requirements");
+            List<Requirement> requirements = new ArrayList<>();
+            for (JsonElement element : requirementsArray){
+                JsonObject requirementObject = element.getAsJsonObject();
+                Identifier type = Identifier.tryParse(requirementObject.get("type").getAsString());
+                Requirement.RequirementType requirementType = Registries.requirements.get(type);
+                if (requirementType == null)
+                    continue;
+                Requirement requirement = requirementType.getSerializer().read(requirementObject);
+                requirements.add(requirement);
+            }
+            return new Quest(title,body,targets,requirements);
+        }
+
+        @Override
+        public Quest read(PacketByteBuf packetByteBuf) {
+            Text title = packetByteBuf.readText();
+            Text body = packetByteBuf.readText();
+            BlockPos[] targets = new BlockPos[packetByteBuf.readInt()];
+
+            for (int i = 0; i<targets.length; i++){
+                targets[i] = packetByteBuf.readBlockPos();
+            }
+
+            int capacity = packetByteBuf.readInt();
+            List<Requirement> requirements = new ArrayList<>();
+            for (int i = 0; i<capacity; i++){
+                Identifier type = packetByteBuf.readIdentifier();
+                Requirement requirement = Registries.requirements.get(type).getSerializer().read(packetByteBuf);
+                requirements.add(requirement);
+            }
+            return new Quest(title,body,targets,List.of());
+        }
+    }
 }

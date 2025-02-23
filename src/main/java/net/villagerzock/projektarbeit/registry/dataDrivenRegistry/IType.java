@@ -1,5 +1,8 @@
-package net.villagerzock.projektarbeit.registry;
+package net.villagerzock.projektarbeit.registry.dataDrivenRegistry;
 
-public interface IType<T> {
+import net.minecraft.util.Identifier;
+
+public interface IType<T extends IHaveASerializerAndType<T>> {
     ISerializer<T> getSerializer();
+    boolean shouldSendToClient();
 }
