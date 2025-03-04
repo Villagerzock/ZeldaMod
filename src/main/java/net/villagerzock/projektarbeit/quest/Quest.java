@@ -9,6 +9,7 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.villagerzock.projektarbeit.Main;
 import net.villagerzock.projektarbeit.registry.Registries;
 import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.IHaveASerializerAndType;
 import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.ISerializer;
@@ -20,12 +21,14 @@ import java.util.List;
 public class Quest implements IHaveASerializerAndType<Quest> {
     private final Text Title;
     private final Text Body;
+    private final QuestCategory category;
     private final BlockPos[] targets;
     private final List<Requirement> requirements;
 
-    public Quest(Text title, Text body, BlockPos[] targets,List<Requirement> requirements) {
+    public Quest(Text title, Text body, QuestCategory category, BlockPos[] targets, List<Requirement> requirements) {
         Title = title;
         Body = body;
+        this.category = category;
         this.targets = targets;
         this.requirements = requirements;
     }
@@ -36,6 +39,10 @@ public class Quest implements IHaveASerializerAndType<Quest> {
     @Override
     public ISerializer<Quest> getSerializer() {
         return Serializer.INSTANCE;
+    }
+
+    public QuestCategory getCategory() {
+        return category;
     }
 
     @Override
@@ -79,13 +86,19 @@ public class Quest implements IHaveASerializerAndType<Quest> {
             }
             byteBuf.writeInt(object.requirements.size());
             for (Requirement requirement : object.requirements){
-                byteBuf.writeIdentifier(requirement.getType().getType());
-                requirement.getSerializer().write(requirement,byteBuf);
+                try {
+                    byteBuf.writeIdentifier(requirement.getType().getType());
+                    requirement.getSerializer().write(requirement,byteBuf);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
+            byteBuf.writeIdentifier(Registries.quest_categories.getId(object.category));
         }
 
         @Override
         public Quest read(JsonElement jsonElement) {
+            Main.LOGGER.info("Reading Quest from Json and Category is: ");
             JsonObject object = jsonElement.getAsJsonObject();
             Text title = Text.Serializer.fromJson(object.get("title"));
             Text body = Text.Serializer.fromJson(object.get("body"));
@@ -108,11 +121,15 @@ public class Quest implements IHaveASerializerAndType<Quest> {
                 Requirement requirement = requirementType.getSerializer().read(requirementObject);
                 requirements.add(requirement);
             }
-            return new Quest(title,body,targets,requirements);
+            Identifier categoryID = Identifier.tryParse(object.get("category").getAsString());
+            QuestCategory category = Registries.quest_categories.get(categoryID);
+
+            return new Quest(title,body,category,targets,requirements);
         }
 
         @Override
         public Quest read(PacketByteBuf packetByteBuf) {
+
             Text title = packetByteBuf.readText();
             Text body = packetByteBuf.readText();
             BlockPos[] targets = new BlockPos[packetByteBuf.readInt()];
@@ -128,7 +145,10 @@ public class Quest implements IHaveASerializerAndType<Quest> {
                 Requirement requirement = Registries.requirements.get(type).getSerializer().read(packetByteBuf);
                 requirements.add(requirement);
             }
-            return new Quest(title,body,targets,List.of());
+            Identifier id = packetByteBuf.readIdentifier();
+            Main.LOGGER.info("CategoryID: " + id.toString());
+            QuestCategory category = Registries.quest_categories.get(id);
+            return new Quest(title,body,category,targets,List.of());
         }
     }
 }

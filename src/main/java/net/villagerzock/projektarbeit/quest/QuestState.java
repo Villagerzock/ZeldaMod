@@ -18,11 +18,20 @@ public class QuestState {
     }
     public void complete(Requirement requirement){
         completedRequirements.add(type.getRequirements().indexOf(requirement));
-        System.out.println("Completed Requirement: " + requirement.getCompletionDisplay(TextColor.fromFormatting(Formatting.RED)));
     }
 
     public List<Integer> getCompletedRequirements() {
         return completedRequirements;
+    }
+    public List<Requirement> getNonCompletedRequirements(){
+        List<Requirement> requirements = type.getRequirements();
+        for (int i : completedRequirements){
+            requirements.remove(i);
+        }
+        return requirements;
+    }
+    public boolean isRequirementCompleted(Requirement requirement){
+        return completedRequirements.contains(type.getRequirements().indexOf(requirement));
     }
 
     public Quest getType() {

@@ -13,6 +13,7 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.SynchronousResourceReloader;
 import net.minecraft.util.Identifier;
 import net.villagerzock.projektarbeit.Main;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,22 +53,31 @@ public class DataDrivenRegistry<T extends IHaveASerializerAndType<T>> extends Si
 
     @Override
     public void reload(ResourceManager manager) {
-        Main.LOGGER.info("Reloading for Registry: " + getFabricId());
-        for (Identifier fileName : manager.findResources(getFabricId().getPath(),path -> path.getPath().endsWith(".json")).keySet()){
-            String path = fileName.getPath().replaceFirst(getFabricId().getPath() + "/","");
-            Identifier file = Identifier.of(fileName.getNamespace(),path.substring(0,path.lastIndexOf(".json")));
-            Main.LOGGER.info("Loading file: " + file);
-            try (InputStream stream = manager.getResource(fileName).get().getInputStream()) {
-                try {
-                    Reader reader = new InputStreamReader(stream,"UTF-8");
-                    JsonElement element = new Gson().fromJson(reader, JsonElement.class);
-                    set(file,type.getSerializer().read(element));
-                }catch (JsonSyntaxException e){
+        try {
+            Main.LOGGER.info("Reloading for Registry: " + getFabricId());
+            for (Identifier fileName : manager.findResources(getFabricId().getPath(),path -> path.getPath().endsWith(".json")).keySet()){
+                String path = fileName.getPath().replaceFirst(getFabricId().getPath() + "/","");
+                Identifier file = Identifier.of(fileName.getNamespace(),path.substring(0,path.lastIndexOf(".json")));
+                Main.LOGGER.info("Loading file: " + file);
+                try (InputStream stream = manager.getResource(fileName).get().getInputStream()) {
+                    try {
+                        Reader reader = new InputStreamReader(stream,"UTF-8");
+                        JsonElement element = new Gson().fromJson(reader, JsonElement.class);
+                        set(file,type.getSerializer().read(element));
+                    }catch (JsonSyntaxException e){
+                        throw new RuntimeException(e);
+                    }
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
+    }
+
+    @Override
+    public @Nullable T get(@Nullable Identifier id) {
+        return super.get(id);
     }
 }

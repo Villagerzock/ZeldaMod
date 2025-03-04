@@ -15,6 +15,9 @@
     ],
     "main": [
       "net.villagerzock.projektarbeit.Main"
+    ],
+    "modmenu": [
+      "net.villagerzock.projektarbeit.config.ModMenuImpl"
     ]
   },
   "mixins": [

@@ -2,10 +2,12 @@ package net.villagerzock.projektarbeit.quest;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
@@ -20,6 +22,7 @@ import java.util.List;
 
 public abstract class Requirement implements IHaveASerializerAndType<Requirement> {
     private final IRequirement requirement;
+    public static final MutableText EMPTY_TEXT = Text.empty();
 
     public Requirement(AfterRequirementCompleted completed){
         requirement = ()->{
@@ -33,8 +36,8 @@ public abstract class Requirement implements IHaveASerializerAndType<Requirement
     public static AfterRequirementCompleted readThen(JsonObject object){
         return null;
     }
-    public Text getCompletionDisplay(TextColor completionColor){
-        return Text.empty();
+    public Text getCompletionDisplay(TextColor completionColor, ClientPlayerEntity player){
+        return EMPTY_TEXT;
     }
     @Override
     public abstract RequirementType getType();

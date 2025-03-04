@@ -21,7 +21,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreen<Playe
 
     @Inject(method = "init",at = @At("HEAD"))
     public void initInject(CallbackInfo ci){
-        addDrawableChild(ButtonWidget.builder(Text.translatable("miscellaneous.zelda.quests"), (button -> {
+        addDrawableChild(ButtonWidget.builder(Text.translatable("gui.zelda.quests"), (button -> {
             client.setScreen(new QuestScreen());
         })).build());
     }

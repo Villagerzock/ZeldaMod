@@ -1,13 +1,14 @@
 {
   "title": "Test",
   "body": "This is a test Quest",
+  "category": "zelda:main",
   "targets": [
     [0,0,0],
     [120,64,1024]
   ],
   "requirements": [
     {
-      "type": "player_in_distance_to_block_pos",
+      "type": "zelda:player_in_distance_to_block_pos",
       "pos": [0,0,0],
       "range": 10,
       "then": {
@@ -16,7 +17,7 @@
       }
     },
     {
-      "type": "player_in_distance_to_block_pos",
+      "type": "zelda:player_in_distance_to_block_pos",
       "pos": [120,64,1024],
       "pos_type": "local",
       "range": 10,

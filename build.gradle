@@ -12,6 +12,7 @@ base {
 
 
 repositories {
+    maven { url "https://maven.terraformersmc.com/releases/" }
     // Add repositories to retrieve artifacts from in here.
     // You should only use this when depending on other mods because
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
@@ -26,6 +27,8 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    modApi "com.terraformersmc:modmenu:7.2.2"
 }
 
 processResources {
@@ -52,7 +55,9 @@ tasks.withType(JavaCompile).configureEach {
         it.options.release.set(targetJavaVersion)
     }
 }
-
+loom {
+    accessWidenerPath = file("src/main/resources/zelda.accesswidener")
+}
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     if (JavaVersion.current() < javaVersion) {

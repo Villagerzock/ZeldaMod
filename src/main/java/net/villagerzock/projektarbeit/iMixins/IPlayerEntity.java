@@ -2,6 +2,7 @@ package net.villagerzock.projektarbeit.iMixins;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
+import net.villagerzock.projektarbeit.abilities.Ability;
 import net.villagerzock.projektarbeit.quest.Quest;
 import net.villagerzock.projektarbeit.quest.QuestState;
 
@@ -13,4 +14,6 @@ public interface IPlayerEntity {
     boolean hasQuest(QuestState state);
     void completeQuest(Quest quest);
     boolean isQuestCompleted(Quest quest);
+    Ability getCurrentAbility();
+    Ability[] getUnlockedAbilities();
 }

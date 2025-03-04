@@ -1,18 +1,21 @@
 package net.villagerzock.projektarbeit.client;
 
-import com.mojang.serialization.Lifecycle;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.villagerzock.projektarbeit.Main;
+import net.villagerzock.projektarbeit.abilities.Ability;
+import net.villagerzock.projektarbeit.client.ui.UI;
 import net.villagerzock.projektarbeit.iMixins.IPlayerEntity;
 import net.villagerzock.projektarbeit.quest.QuestState;
 import net.villagerzock.projektarbeit.registry.Registries;
@@ -20,10 +23,21 @@ import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.DataDrivenRegi
 import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.IHaveASerializerAndType;
 import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.ISerializer;
 import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.IType;
+import org.lwjgl.glfw.GLFW;
 
 public class MainClient implements ClientModInitializer {
+    public static KeyBinding ACTIVATE_ABILITY;
     @Override
     public void onInitializeClient() {
+        HudRenderCallback.EVENT.register(new UI());
+        ACTIVATE_ABILITY = new KeyBinding(
+                "key.zelda.activate_ability",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_V,
+                "key.category.zelda.ability"
+        );
+
+        KeyBindingHelper.registerKeyBinding(ACTIVATE_ABILITY);
         ClientTickEvents.END_CLIENT_TICK.register(MainClient::clientTick);
     }
     private static boolean isPlayerThere = false;
@@ -36,6 +50,28 @@ public class MainClient implements ClientModInitializer {
         }else {
             isPlayerThere = false;
         }
+        if (client.player instanceof IPlayerEntity player){
+            Ability playerAbility = player.getCurrentAbility();
+            if (playerAbility != null){
+                while (ACTIVATE_ABILITY.wasPressed()){
+                    playerAbility.onAbilityActivated(client.player, client.world);
+                    PacketByteBuf buf = PacketByteBufs.create();
+                    buf.writeIdentifier(Registries.abilities.getId(playerAbility));
+                    buf.writeString("activate");
+                    ClientPlayNetworking.send(Main.ABILITY_INTERACTION,buf);
+                }
+                playerAbility.getBindings().forEach((mode, keyBinding) -> {
+                    while (keyBinding.wasPressed()){
+                        playerAbility.onAbilityUsed(client.player,client.world,mode);
+                        PacketByteBuf buf = PacketByteBufs.create();
+                        buf.writeIdentifier(Registries.abilities.getId(playerAbility));
+                        buf.writeString(mode.name());
+                        ClientPlayNetworking.send(Main.ABILITY_INTERACTION,buf);
+                    }
+                });
+            }
+        }
+
     }
 
     private static Identifier currentRegistryId;

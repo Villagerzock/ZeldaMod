@@ -6,7 +6,9 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.util.Identifier;
 import net.villagerzock.projektarbeit.Main;
+import net.villagerzock.projektarbeit.abilities.Ability;
 import net.villagerzock.projektarbeit.quest.Quest;
+import net.villagerzock.projektarbeit.quest.QuestCategory;
 import net.villagerzock.projektarbeit.quest.Requirement;
 import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.DataDrivenRegistry;
 import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.IHaveASerializerAndType;
@@ -15,11 +17,15 @@ import net.villagerzock.projektarbeit.registry.dataDrivenRegistry.IType;
 public class Registries {
     public static final SimpleRegistry<DataDrivenRegistry<?>> dataDrivenRegistries;
     public static final DataDrivenRegistry<Quest> quests;
+    public static final DataDrivenRegistry<QuestCategory> quest_categories;
     public static final SimpleRegistry<Requirement.RequirementType> requirements;
+    public static final SimpleRegistry<Ability> abilities;
     static {
         dataDrivenRegistries = create("data_driven_registries");
+        quest_categories = createDataDriven("quest_categories",QuestCategory.Type.INSTANCE);
         quests = createDataDriven("quests",Quest.Type.INSTANCE);
         requirements = create("requirements");
+        abilities = create("abilities");
     }
     public static <T> SimpleRegistry<T> create(String name){
         return new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(Main.MODID,name)), Lifecycle.stable());

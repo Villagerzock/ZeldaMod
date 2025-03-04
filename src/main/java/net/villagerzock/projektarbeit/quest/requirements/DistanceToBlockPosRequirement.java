@@ -1,7 +1,10 @@
 package net.villagerzock.projektarbeit.quest.requirements;
 
 import com.google.gson.JsonObject;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Position;
 import net.villagerzock.projektarbeit.quest.QuestState;
@@ -22,6 +25,12 @@ public class DistanceToBlockPosRequirement extends Requirement {
         Position playerPosition = entity.getPos();
         return positon.isWithinDistance(playerPosition,distance);
     }
+
+    @Override
+    public Text getCompletionDisplay(TextColor completionColor, ClientPlayerEntity player) {
+        return Text.translatable("requirement.zelda.distance_to").append(Text.literal(": ").append(Text.literal(String.valueOf((int) Math.sqrt(positon.getSquaredDistance(player.getBlockPos()))))).append(Text.literal(" ").append(Text.translatable("requirement.zelda.blocks"))));
+    }
+
     @Override
     public RequirementSerializer getSerializer() {
         return Serializer.INSTANCE;

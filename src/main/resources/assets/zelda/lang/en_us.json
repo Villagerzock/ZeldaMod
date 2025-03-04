@@ -7,6 +7,22 @@
   "comment.zelda.item_groups": "Here are the Item Group Translations",
   "zelda.item_group.ingredients": "Ingredients",
 
-  "comment.zelda.miscellaneous": "Here are the GUI Text Translations",
-  "miscellaneous.zelda.quests": "Quests"
+  "comment.zelda.gui": "Here are the GUI Text Translations",
+  "gui.zelda.quests": "Quests",
+  "gui.save_and_close": "Save & Close",
+
+  "comment.zelda.requirements": "Here are the Requirements Translations",
+  "requirements.zelda.distance_to": "Distance To",
+  "requirements.zelda.blocks": "Blocks",
+
+  "comment.zelda.keybindings": "Here are the Key Binding Translations",
+  "key.category.zelda.ability": "Zelda | Ability",
+  "key.zelda.activate_ability": "Activate Ability",
+
+  "comment.zelda.config": "Here are the Config Translations",
+  "config.zelda.config": "ZeldaMod Config",
+  "config.zelda.client": "Client-Side Config",
+  "config.zelda.gameplay": "Gameplay Config",
+  "config.zelda.server": "Server-Side Config",
+  "config.zelda.entry.ui_type": "UI-Type"
 }
