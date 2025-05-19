@@ -1,5 +1,6 @@
 package net.villagerzock.projektarbeit.config;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
@@ -9,9 +10,11 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.villagerzock.projektarbeit.Main;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public class ConfigCategory extends ConfigEntry<List<ConfigEntry<?>>> {
@@ -39,11 +42,34 @@ public class ConfigCategory extends ConfigEntry<List<ConfigEntry<?>>> {
     }
 
     @Override
-    public void deserialize(JsonObject object) {
+    public void deserialize(JsonElement object) {
         for (ConfigEntry<?> entry : entries){
-            entry.deserialize(object.getAsJsonObject(entry.id.toString()));
+            entry.deserialize(object.getAsJsonObject().getAsJsonObject(entry.id.toString()));
         }
     }
+
+    public <T> T getEntry(Identifier id,T defaultValue){
+        for (ConfigEntry<?> entry : entries){
+            if (entry.id == id)
+                return ((ConfigEntry<T>) entry).getValue();
+        }
+        return defaultValue;
+    }
+    public <T> T getEntry(String id,T defaultValue){
+        return getEntry(Identifier.of(Main.MODID,id),defaultValue);
+    }
+    public ConfigCategory getCategory(Identifier id){
+        for (ConfigEntry<?> entry : entries){
+            if (entry.id == id)
+                if (entry instanceof ConfigCategory category)
+                    return category;
+        }
+        return new ConfigCategory(Text.empty(),Identifier.of(Main.MODID,"null"),this);
+    }
+    public ConfigCategory getCategory(String id){
+        return getCategory(Identifier.of(Main.MODID,id));
+    }
+
     public List<ClickableWidget> getElements(){
 
         List<ClickableWidget> elements = new ArrayList<>();
@@ -60,8 +86,8 @@ public class ConfigCategory extends ConfigEntry<List<ConfigEntry<?>>> {
         return elements;
     }
     @Override
-    public <T extends Element> T getObject() {
-        return (T) ButtonWidget.builder(title, button -> {
+    public ClickableWidget getObject() {
+        return ButtonWidget.builder(title, button -> {
             MinecraftClient.getInstance().setScreen(new ConfigScreen(this));
         }).build();
     }

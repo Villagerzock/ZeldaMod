@@ -1,11 +1,13 @@
 package net.villagerzock.projektarbeit.config.entries;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -20,18 +22,18 @@ public class StringEntry extends ConfigEntry<String> {
     }
 
     @Override
-    public JsonObject serialize() {
+    public JsonElement serialize() {
         return null;
     }
 
     @Override
-    public void deserialize(JsonObject object) {
+    public void deserialize(JsonElement object) {
 
     }
 
     @Override
-    public <T extends Element> T getObject() {
-        return (T) new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0,0,100,20,title);
+    public ClickableWidget getObject() {
+        return new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0,0,100,20,title);
     }
 
     @Override

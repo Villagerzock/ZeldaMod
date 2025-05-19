@@ -8,8 +8,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.villagerzock.projektarbeit.Main;
 import net.villagerzock.projektarbeit.client.screens.Color;
+import net.villagerzock.projektarbeit.events.PlayerEvents;
 import org.joml.Vector2i;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class Ability {
@@ -17,17 +20,15 @@ public abstract class Ability {
     public enum InteractMode{
         LEFT_HAND,
         RIGHT_HAND,
-        NONE
         ;
     }
-    public abstract InteractMode[] allowedInteractions();
-    public abstract Map<InteractMode, Vector2i> getInteractionPosition();
-    public abstract Map<InteractMode, KeyBinding> getBindings();
-    public abstract void onAbilityActivated(PlayerEntity player, World world);
-    public abstract void onAbilityUsed(PlayerEntity player, World world, InteractMode mode);
-    public static Identifier getTexture(Identifier identifier){
-        return identifier.withPrefixedPath("ability");
+    public void tick(PlayerEntity player, World world){
+
     }
+    public abstract Map<InteractMode, List<KeyBinding>> getBindings();
+    public abstract void onAbilityActivated(PlayerEntity player, World world);
+    public abstract void onAbilityUsed(PlayerEntity player, World world, KeyBinding binding);
+    public abstract boolean canAbilityPartBeUsed(PlayerEntity player, World world, KeyBinding binding);
     public static String getTranslationKey(Identifier identifier){
         return identifier.toTranslationKey("ability");
     }

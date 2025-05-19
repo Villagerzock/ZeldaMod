@@ -21,6 +21,7 @@ import net.villagerzock.projektarbeit.Main;
 import net.villagerzock.projektarbeit.abilities.Abilities;
 import net.villagerzock.projektarbeit.abilities.Ability;
 import net.villagerzock.projektarbeit.abilities.FuseAbility;
+import net.villagerzock.projektarbeit.abilities.PlayerAbilityHandler;
 import net.villagerzock.projektarbeit.events.PlayerEvents;
 import net.villagerzock.projektarbeit.iMixins.IPlayerEntity;
 import net.villagerzock.projektarbeit.quest.Quest;
@@ -36,11 +37,13 @@ import java.util.List;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements IPlayerEntity {
+    @Shadow @Final private PlayerAbilities abilities;
     @Unique
     private final List<QuestState> quests = new ArrayList<>();
     private final List<Identifier> completedQuests = new ArrayList<>();
     private final List<Ability> unlockedAbilities = new ArrayList<>();
     private Ability selectedAbility = null;
+    private final PlayerAbilityHandler abilityHandler = new PlayerAbilityHandler();
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -48,6 +51,25 @@ public abstract class PlayerEntityMixin extends LivingEntity implements IPlayerE
     @Override
     public Ability getCurrentAbility() {
         return selectedAbility;
+    }
+
+    @Override
+    public PlayerAbilityHandler getAbilityHandler() {
+        return abilityHandler;
+    }
+
+    @Override
+    public void setCurrentAbility(Ability selectedAbility) {
+        if (!unlockedAbilities.contains(selectedAbility)){
+            return;
+        }
+        if (getAsPlayerEntity() instanceof ServerPlayerEntity serverPlayer){
+            PacketByteBuf buf = PacketByteBufs.create();
+            buf.writeBoolean(true);
+            buf.writeInt(Registries.abilities.getRawId(selectedAbility));
+            ServerPlayNetworking.send(serverPlayer,Main.UPDATE_ABILITY,buf);
+        }
+        this.selectedAbility = selectedAbility;
     }
 
     @Inject(method = "tick",at = @At("HEAD"))
@@ -143,6 +165,17 @@ public abstract class PlayerEntityMixin extends LivingEntity implements IPlayerE
     @Override
     public Ability[] getUnlockedAbilities() {
         return unlockedAbilities.toArray(Ability[]::new);
+    }
+
+    @Override
+    public void addUnlockedAbility(Ability ability) {
+        if (getAsPlayerEntity() instanceof ServerPlayerEntity serverPlayer){
+            PacketByteBuf buf = PacketByteBufs.create();
+            buf.writeBoolean(false);
+            buf.writeInt(Registries.abilities.getRawId(selectedAbility));
+            ServerPlayNetworking.send(serverPlayer,Main.UPDATE_ABILITY,buf);
+        }
+        unlockedAbilities.add(ability);
     }
 
     @Override

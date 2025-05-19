@@ -1,8 +1,11 @@
 package net.villagerzock.projektarbeit.config.entries;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.villagerzock.projektarbeit.config.ConfigEntry;
@@ -22,24 +25,22 @@ public class EnumEntry<T extends Enum<T>> extends ConfigEntry<T> {
     }
 
     @Override
-    public JsonObject serialize() {
-        JsonObject object = new JsonObject();
-        object.addProperty("value",getValue().name());
-        return object;
+    public JsonPrimitive serialize() {
+        return new JsonPrimitive(getValue().name());
     }
 
     @Override
-    public void deserialize(JsonObject object) {
-        value = T.valueOf(enumeration,object.get("value").getAsString());
+    public void deserialize(JsonElement object) {
+        value = T.valueOf(enumeration,object.getAsString());
     }
 
     @Override
-    public <S extends Element> S getObject() {
+    public ClickableWidget getObject() {
         ButtonWidget buttonWidget = ButtonWidget.builder(title.copy().append(Text.literal(": " + value.name())),button -> {
             value = enumeration.getEnumConstants()[Math.floorMod(value.ordinal() + 1,enumeration.getEnumConstants().length)];
             button.setMessage(title.copy().append(Text.literal(": " + value.name())));
         }).build();
-        return (S) buttonWidget;
+        return buttonWidget;
     }
 
     @Override

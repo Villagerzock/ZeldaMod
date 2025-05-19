@@ -1,0 +1,97 @@
+{
+  "variants": {
+    "axis=y,cut=true": {
+      "model": "zelda:block/sky_oak_log"
+    },
+    "axis=z,cut=true": {
+      "model": "zelda:block/sky_oak_log",
+      "x": 90
+    },
+    "axis=x,cut=true": {
+      "model": "zelda:block/sky_oak_log",
+      "x": 90,
+      "y": 0
+    },
+    "axis=y,cut=false": [
+      {
+        "model": "zelda:block/sky_oak_log_east",
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log_north",
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log_south",
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log_west",
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log",
+        "weight": 10
+      }
+    ],
+    "axis=z,cut=false": [
+      {
+        "model": "zelda:block/sky_oak_log_east",
+        "x": 90,
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log_north",
+        "x": 90,
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log_south",
+        "x": 90,
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log_west",
+        "x": 90,
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log",
+        "x": 90,
+        "weight": 10
+      }
+    ],
+    "axis=x,cut=false": [
+      {
+        "model": "zelda:block/sky_oak_log_east",
+        "x": 90,
+        "y": 90,
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log_north",
+        "x": 90,
+        "y": 90,
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log_south",
+        "x": 90,
+        "y": 90,
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log_west",
+        "x": 90,
+        "y": 90,
+        "weight": 1
+      },
+      {
+        "model": "zelda:block/sky_oak_log",
+        "x": 90,
+        "y": 90,
+        "weight": 10
+      }
+    ]
+  }
+}

@@ -6,6 +6,9 @@
 
   "comment.zelda.item_groups": "Here are the Item Group Translations",
   "zelda.item_group.ingredients": "Ingredients",
+  "zelda.item_group.key_items": "Key Items",
+  "zelda.item_group.weapons": "Weapons",
+  "zelda.item_group.shields": "Shields",
 
   "comment.zelda.gui": "Here are the GUI Text Translations",
   "gui.zelda.quests": "Quests",
@@ -24,5 +27,11 @@
   "config.zelda.client": "Client-Side Config",
   "config.zelda.gameplay": "Gameplay Config",
   "config.zelda.server": "Server-Side Config",
-  "config.zelda.entry.ui_type": "UI-Type"
+  "config.zelda.entry.ui_type": "UI-Type",
+
+  "comment.zelda.ability": "Here are the Ability Translations",
+  ""
+
+  "comment.zelda.fuse": "Here are the Fuse Translations",
+  "fuse.type.sword": "Sword"
 }

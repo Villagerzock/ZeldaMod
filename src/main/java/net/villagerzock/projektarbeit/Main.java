@@ -4,29 +4,42 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.*;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.impl.screenhandler.client.ClientNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.render.model.SpriteAtlasManager;
+import net.minecraft.client.texture.SpriteAtlasTexture;
+import net.minecraft.client.texture.SpriteLoader;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.ResourceReloader;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.profiler.Profiler;
+import net.villagerzock.projektarbeit.abilities.Abilities;
 import net.villagerzock.projektarbeit.abilities.Ability;
 import net.villagerzock.projektarbeit.block.Blocks;
 import net.villagerzock.projektarbeit.client.MainClient;
 import net.villagerzock.projektarbeit.commands.HorseCommand;
 import net.villagerzock.projektarbeit.commands.QuestCommand;
+import net.villagerzock.projektarbeit.commands.TestCommand;
 import net.villagerzock.projektarbeit.events.PlayerEvents;
 import net.villagerzock.projektarbeit.iMixins.IPlayerEntity;
 import net.villagerzock.projektarbeit.item.ItemGroups;
@@ -46,6 +59,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 public class Main implements ModInitializer {
     public static final String MODID = "zelda";
@@ -57,32 +72,40 @@ public class Main implements ModInitializer {
     public static final Identifier GET_QUESTS = Identifier.of(MODID,"get_quests");
     public static final Identifier ABILITY_INTERACTION = Identifier.of(MODID,"ability_interaction");
     public static final Identifier UPDATE_SERVER_CONFIG = Identifier.of(MODID,"update_server_config");
+    public static final Identifier PARAGLIDER_ATLAS = new Identifier("paraglider", "atlases/paraglider");
+    public static final Identifier UPDATE_ABILITY = new Identifier(MODID,"update_ability");
     @Override
     public void onInitialize() {
         // Registering Registries
         ItemGroups.registerItemGroups();
         Items.registerAllItems();
         Blocks.registerBlocks();
+        Abilities.staticRegister();
 
         //Requirements.registerAll();
 
         // Registering Events
         registerReloadListenersForDataDrivenRegistry();
+        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener((ReloadListener) Main::onClientReload);
 
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register(Main::syncDataPackContents);
         ClientPlayNetworking.registerGlobalReceiver(DATA_DRIVEN_REGISTRY_COMING, MainClient::RegistryComing);
         ClientPlayNetworking.registerGlobalReceiver(SEND_DATA_DRIVEN_REGISTRY_DATA_TO_CLIENT,MainClient::RegistryDataPacket);
         ClientPlayNetworking.registerGlobalReceiver(GIVE_QUEST_TO_PLAYER,MainClient::giveQuestToPlayer);
+        ClientPlayNetworking.registerGlobalReceiver(UPDATE_ABILITY,MainClient::updateAbility);
         ServerPlayNetworking.registerGlobalReceiver(PLAYER_MOVEMENT_EVENT, Main::emitPlayerMovementEvent);
         ServerPlayNetworking.registerGlobalReceiver(GET_QUESTS,Main::playerJoined);
         ServerPlayNetworking.registerGlobalReceiver(ABILITY_INTERACTION,Main::abilityInteraction);
         ServerPlayNetworking.registerGlobalReceiver(UPDATE_SERVER_CONFIG,Main::updateServerConfig);
         CommandRegistrationCallback.EVENT.register(new HorseCommand());
         CommandRegistrationCallback.EVENT.register(new QuestCommand());
+        CommandRegistrationCallback.EVENT.register(new TestCommand());
         PlayerEvents.MOVEMENT_EVENT.register(Main::onPlayerMovement);
+
     }
 
-
+    private static void onClientReload(ResourceManager manager){
+    }
     private static void updateServerConfig(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf byteBuf, PacketSender sender){
         if (player.hasPermissionLevel(2)){
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -97,6 +120,15 @@ public class Main implements ModInitializer {
             }
         }
     }
+    public static void drawBackground(DrawContext context){
+        MatrixStack ms = context.getMatrices();
+        ms.push();
+        int scale = 20;
+        ms.scale(scale,scale,scale);
+        ms.translate(0,-10,0);
+        context.drawItem(new ItemStack(Items.TITLE_SCREEN),0,0);
+        ms.pop();
+    }
     private static void abilityInteraction(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf byteBuf, PacketSender sender) {
         Ability ability = Registries.abilities.get(byteBuf.readIdentifier());
         String type = byteBuf.readString();
@@ -105,7 +137,9 @@ public class Main implements ModInitializer {
             ability.onAbilityActivated(player,player.getWorld());
         }else {
             Ability.InteractMode mode = Ability.InteractMode.valueOf(type);
-            ability.onAbilityUsed(player,player.getWorld(),mode);
+            int index = byteBuf.readInt();
+            KeyBinding keyBinding = ability.getBindings().get(mode).get(index);
+            ability.onAbilityUsed(player,player.getWorld(),keyBinding);
         }
     }
 
@@ -116,6 +150,18 @@ public class Main implements ModInitializer {
                 PacketByteBuf buf = PacketByteBufs.create();
                 buf.writeIdentifier(Registries.quests.getId(state.getType()));
                 sender.sendPacket(GIVE_QUEST_TO_PLAYER, buf);
+            }
+            if (player instanceof IPlayerEntity playerEntity){
+                PacketByteBuf buf = PacketByteBufs.create();
+                buf.writeBoolean(true);
+                buf.writeInt(Registries.abilities.getRawId(playerEntity.getCurrentAbility()));
+                sender.sendPacket(UPDATE_ABILITY,buf);
+                for (Ability ability : playerEntity.getUnlockedAbilities()){
+                    buf = PacketByteBufs.create();
+                    buf.writeBoolean(false);
+                    buf.writeInt(Registries.abilities.getRawId(ability));
+                    sender.sendPacket(UPDATE_ABILITY,buf);
+                }
             }
         }
     }

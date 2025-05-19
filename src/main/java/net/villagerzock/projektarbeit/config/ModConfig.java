@@ -14,6 +14,6 @@ public class ModConfig extends Config {
 
     @Override
     public Type type() {
-        return Type.BOTH;
+        return Type.NONE;
     }
 }

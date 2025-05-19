@@ -24,23 +24,20 @@ public abstract class Config extends ConfigCategory{
     public enum Type{
         CLIENT,
         SERVER,
-        BOTH
+        NONE
+        ;
     }
-
 
     public abstract Type type();
     public void save(){
         switch (type()){
-            case BOTH:
-                JsonObject object = saveToJson();
-                saveToFile(object);
-                saveToServer(object);
-                break;
             case CLIENT:
                 saveToFile(saveToJson());
                 break;
             case SERVER:
                 saveToServer(saveToJson());
+                break;
+            case NONE:
                 break;
         }
     }
@@ -75,6 +72,22 @@ public abstract class Config extends ConfigCategory{
         buf.writeString(object.toString());
     }
     public void load(){
+        switch (type()){
+            case SERVER:
+                break;
+            case CLIENT:
+                break;
+            case NONE:
+                break;
+        }
+    }
+    public void loadFromServer(){
+
+    }
+    public void loadFromClient(){
+
+    }
+    public static void loadFromJson(){
 
     }
 }

@@ -3,7 +3,6 @@ package net.villagerzock.projektarbeit.abilities;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.villagerzock.projektarbeit.Main;
-import net.villagerzock.projektarbeit.item.FuseableItem;
 import net.villagerzock.projektarbeit.registry.Registries;
 
 public class Abilities {

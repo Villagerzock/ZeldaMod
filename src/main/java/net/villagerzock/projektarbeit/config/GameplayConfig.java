@@ -10,6 +10,6 @@ public class GameplayConfig extends Config{
 
     @Override
     public Type type() {
-        return Type.BOTH;
+        return Type.NONE;
     }
 }

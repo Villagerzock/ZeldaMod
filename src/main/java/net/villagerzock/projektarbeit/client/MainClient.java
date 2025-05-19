@@ -14,7 +14,9 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.villagerzock.projektarbeit.Main;
+import net.villagerzock.projektarbeit.abilities.Abilities;
 import net.villagerzock.projektarbeit.abilities.Ability;
+import net.villagerzock.projektarbeit.client.screens.CircleSelectScreen;
 import net.villagerzock.projektarbeit.client.ui.UI;
 import net.villagerzock.projektarbeit.iMixins.IPlayerEntity;
 import net.villagerzock.projektarbeit.quest.QuestState;
@@ -27,21 +29,41 @@ import org.lwjgl.glfw.GLFW;
 
 public class MainClient implements ClientModInitializer {
     public static KeyBinding ACTIVATE_ABILITY;
+    public static KeyBinding FUSE_MAINHAND;
+    public static KeyBinding FUSE_OFFHAND;
     @Override
     public void onInitializeClient() {
         HudRenderCallback.EVENT.register(new UI());
         ACTIVATE_ABILITY = new KeyBinding(
                 "key.zelda.activate_ability",
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_V,
+                GLFW.GLFW_KEY_R,
                 "key.category.zelda.ability"
+        );
+        FUSE_MAINHAND = new AbilityKeyBinding(
+                "key.zelda.fuse_mainhand",
+                InputUtil.Type.MOUSE,
+                GLFW.GLFW_MOUSE_BUTTON_RIGHT,
+                "key.category.zelda.ability",
+                Abilities.FUSE_ABILITY
+        );
+        FUSE_OFFHAND = new AbilityKeyBinding(
+                "key.zelda.fuse_offhand",
+                InputUtil.Type.MOUSE,
+                GLFW.GLFW_MOUSE_BUTTON_LEFT,
+                "key.category.zelda.ability",
+                Abilities.FUSE_ABILITY
         );
 
         KeyBindingHelper.registerKeyBinding(ACTIVATE_ABILITY);
+        KeyBindingHelper.registerKeyBinding(FUSE_MAINHAND);
+        KeyBindingHelper.registerKeyBinding(FUSE_OFFHAND);
         ClientTickEvents.END_CLIENT_TICK.register(MainClient::clientTick);
     }
     private static boolean isPlayerThere = false;
+    public static int activateAbilityWasDown = 0;
     private static void clientTick(MinecraftClient client) {
+        int tickAmount = 10;
         if (client.player != null){
             if (!isPlayerThere){
                 isPlayerThere = true;
@@ -52,23 +74,23 @@ public class MainClient implements ClientModInitializer {
         }
         if (client.player instanceof IPlayerEntity player){
             Ability playerAbility = player.getCurrentAbility();
-            if (playerAbility != null){
-                while (ACTIVATE_ABILITY.wasPressed()){
+            if (ACTIVATE_ABILITY.isPressed()){
+                activateAbilityWasDown += 1;
+                System.out.println("V gedrückt: " + activateAbilityWasDown);
+                if (activateAbilityWasDown > tickAmount){
+                    client.setScreen(new CircleSelectScreen());
+                }
+            }else if (0 < activateAbilityWasDown && activateAbilityWasDown < tickAmount){
+                if (playerAbility != null){
+                    activateAbilityWasDown = 0;
                     playerAbility.onAbilityActivated(client.player, client.world);
+                    System.out.println("Activated Ability");
                     PacketByteBuf buf = PacketByteBufs.create();
                     buf.writeIdentifier(Registries.abilities.getId(playerAbility));
                     buf.writeString("activate");
                     ClientPlayNetworking.send(Main.ABILITY_INTERACTION,buf);
                 }
-                playerAbility.getBindings().forEach((mode, keyBinding) -> {
-                    while (keyBinding.wasPressed()){
-                        playerAbility.onAbilityUsed(client.player,client.world,mode);
-                        PacketByteBuf buf = PacketByteBufs.create();
-                        buf.writeIdentifier(Registries.abilities.getId(playerAbility));
-                        buf.writeString(mode.name());
-                        ClientPlayNetworking.send(Main.ABILITY_INTERACTION,buf);
-                    }
-                });
+
             }
         }
 
@@ -96,6 +118,16 @@ public class MainClient implements ClientModInitializer {
         if (client.player instanceof IPlayerEntity player){
             Main.LOGGER.info("Received Quest given to me");
             player.addQuest(new QuestState(Registries.quests.get(buf.readIdentifier())));
+        }
+    }
+
+    public static void updateAbility(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler, PacketByteBuf buf, PacketSender sender) {
+        if (client.player instanceof IPlayerEntity player){
+            if (buf.readBoolean()){
+                player.setCurrentAbility(Registries.abilities.get(buf.readInt()));
+            }else {
+                player.addUnlockedAbility(Registries.abilities.get(buf.readInt()));
+            }
         }
     }
 }

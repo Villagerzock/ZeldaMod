@@ -29,6 +29,14 @@ public class ScrollLayout extends ElementListWidget<ScrollLayout.ElementEntry> {
             addEntry(new ElementEntry(clickableWidget, this));
         }
     }
+    public <T> void addChildren(EntryConstructor<T> constructor, T... children){
+        for (T widget : children){
+            addEntry(constructor.construct(widget,this));
+        }
+    }
+    public interface EntryConstructor<T>{
+        ElementEntry construct(T widget, ScrollLayout layout);
+    }
     public static class ElementEntry extends ElementListWidget.Entry<ElementEntry> {
         private final List<ClickableWidget> children;
         private final ScrollLayout parent;
@@ -36,11 +44,14 @@ public class ScrollLayout extends ElementListWidget<ScrollLayout.ElementEntry> {
             children = List.of(widget);
             this.parent = parent;
         }
+        public int getWidth(ClickableWidget widget){
+            return widget.getWidth();
+        }
         @Override
         public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             this.children.forEach((widget) -> {
                 widget.setY(y);
-                widget.setX(parent.width / 2 - widget.getWidth() / 2);
+                widget.setX(parent.width / 2 - getWidth(widget) / 2);
                 widget.render(context, mouseX, mouseY, tickDelta);
             });
         }

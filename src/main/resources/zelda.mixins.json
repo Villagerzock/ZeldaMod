@@ -4,11 +4,17 @@
   "package": "net.villagerzock.projektarbeit.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "PlayerEntityMixin"
+    "FollowMobGoalMixin",
+    "PlayerEntityMixin",
+    "PlayerInventoryMixin",
+    "PlayerScreenHandlerMixin"
   ],
   "client": [
+    "InGameHudMixin",
+    "KeyBindingEntryMixin",
     "client.InventoryScreenMixin",
-    "client.ItemRendererMixin"
+    "client.ItemRendererMixin",
+    "client.TitleScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
