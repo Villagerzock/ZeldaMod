@@ -9,7 +9,7 @@ public abstract class TypedBinding<T> extends KeyBinding {
         super(translationKey, inputType, code, category);
         this.type = type;
     }
-
+    public abstract TypedBindingHandler<T> getHandler();
     public T getType() {
         return type;
     }

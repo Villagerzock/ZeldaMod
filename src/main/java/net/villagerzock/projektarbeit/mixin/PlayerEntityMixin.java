@@ -1,6 +1,7 @@
 package net.villagerzock.projektarbeit.mixin;
 
 import io.netty.handler.codec.serialization.ObjectDecoder;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -37,7 +38,6 @@ import java.util.List;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements IPlayerEntity {
-    @Shadow @Final private PlayerAbilities abilities;
     @Unique
     private final List<QuestState> quests = new ArrayList<>();
     private final List<Identifier> completedQuests = new ArrayList<>();
@@ -68,6 +68,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements IPlayerE
             buf.writeBoolean(true);
             buf.writeInt(Registries.abilities.getRawId(selectedAbility));
             ServerPlayNetworking.send(serverPlayer,Main.UPDATE_ABILITY,buf);
+        }else if (getAsPlayerEntity() instanceof ClientPlayerEntity clientPlayer){
+            PacketByteBuf buf = PacketByteBufs.create();
+            buf.writeInt(Registries.abilities.getRawId(selectedAbility));
+            ClientPlayNetworking.send(Main.UPDATE_ABILITY,buf);
         }
         this.selectedAbility = selectedAbility;
     }
@@ -169,6 +173,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements IPlayerE
 
     @Override
     public void addUnlockedAbility(Ability ability) {
+        if (unlockedAbilities.contains(ability)) {
+            return;
+        }
         if (getAsPlayerEntity() instanceof ServerPlayerEntity serverPlayer){
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeBoolean(false);

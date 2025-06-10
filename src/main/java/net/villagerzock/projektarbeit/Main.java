@@ -16,6 +16,7 @@ import net.fabricmc.fabric.impl.screenhandler.client.ClientNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.model.SpriteAtlasManager;
@@ -81,6 +82,7 @@ public class Main implements ModInitializer {
         Items.registerAllItems();
         Blocks.registerBlocks();
         Abilities.staticRegister();
+        Sounds.registerAll();
 
         //Requirements.registerAll();
 
@@ -97,11 +99,18 @@ public class Main implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(GET_QUESTS,Main::playerJoined);
         ServerPlayNetworking.registerGlobalReceiver(ABILITY_INTERACTION,Main::abilityInteraction);
         ServerPlayNetworking.registerGlobalReceiver(UPDATE_SERVER_CONFIG,Main::updateServerConfig);
+        ServerPlayNetworking.registerGlobalReceiver(UPDATE_ABILITY,Main::updateAbility);
         CommandRegistrationCallback.EVENT.register(new HorseCommand());
         CommandRegistrationCallback.EVENT.register(new QuestCommand());
         CommandRegistrationCallback.EVENT.register(new TestCommand());
         PlayerEvents.MOVEMENT_EVENT.register(Main::onPlayerMovement);
 
+    }
+
+    public static void updateAbility(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
+        if (player instanceof IPlayerEntity playerEntity){
+            playerEntity.setCurrentAbility(Registries.abilities.get(buf.readInt()));
+        }
     }
 
     private static void onClientReload(ResourceManager manager){
@@ -126,7 +135,7 @@ public class Main implements ModInitializer {
         int scale = 20;
         ms.scale(scale,scale,scale);
         ms.translate(0,-10,0);
-        context.drawItem(new ItemStack(Items.TITLE_SCREEN),0,0);
+        //context.drawItem(new ItemStack(Items.TITLE_SCREEN),0,0);
         ms.pop();
     }
     private static void abilityInteraction(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf byteBuf, PacketSender sender) {

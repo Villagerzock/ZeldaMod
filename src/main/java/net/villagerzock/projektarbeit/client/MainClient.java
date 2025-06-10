@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
@@ -13,11 +14,13 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 import net.villagerzock.projektarbeit.Main;
 import net.villagerzock.projektarbeit.abilities.Abilities;
 import net.villagerzock.projektarbeit.abilities.Ability;
 import net.villagerzock.projektarbeit.client.screens.CircleSelectScreen;
 import net.villagerzock.projektarbeit.client.ui.UI;
+import net.villagerzock.projektarbeit.iMixins.ICamera;
 import net.villagerzock.projektarbeit.iMixins.IPlayerEntity;
 import net.villagerzock.projektarbeit.quest.QuestState;
 import net.villagerzock.projektarbeit.registry.Registries;
@@ -45,20 +48,24 @@ public class MainClient implements ClientModInitializer {
                 InputUtil.Type.MOUSE,
                 GLFW.GLFW_MOUSE_BUTTON_RIGHT,
                 "key.category.zelda.ability",
-                Abilities.FUSE_ABILITY
+                Abilities.FUSE
         );
         FUSE_OFFHAND = new AbilityKeyBinding(
                 "key.zelda.fuse_offhand",
                 InputUtil.Type.MOUSE,
                 GLFW.GLFW_MOUSE_BUTTON_LEFT,
                 "key.category.zelda.ability",
-                Abilities.FUSE_ABILITY
+                Abilities.FUSE
         );
 
         KeyBindingHelper.registerKeyBinding(ACTIVATE_ABILITY);
         KeyBindingHelper.registerKeyBinding(FUSE_MAINHAND);
         KeyBindingHelper.registerKeyBinding(FUSE_OFFHAND);
         ClientTickEvents.END_CLIENT_TICK.register(MainClient::clientTick);
+        WorldRenderEvents.AFTER_TRANSLUCENT.register(new BlockOverlayRenderer());
+        WorldRenderEvents.START.register((context)->{
+
+        });
     }
     private static boolean isPlayerThere = false;
     public static int activateAbilityWasDown = 0;

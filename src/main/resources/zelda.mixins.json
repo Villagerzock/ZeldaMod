@@ -12,6 +12,7 @@
   "client": [
     "InGameHudMixin",
     "KeyBindingEntryMixin",
+    "KeyBindingMixin",
     "client.InventoryScreenMixin",
     "client.ItemRendererMixin",
     "client.TitleScreenMixin"

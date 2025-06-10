@@ -3,6 +3,7 @@ package net.villagerzock.projektarbeit.abilities;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
@@ -29,6 +30,8 @@ public abstract class Ability {
     public abstract void onAbilityActivated(PlayerEntity player, World world);
     public abstract void onAbilityUsed(PlayerEntity player, World world, KeyBinding binding);
     public abstract boolean canAbilityPartBeUsed(PlayerEntity player, World world, KeyBinding binding);
+    public abstract ItemStack getIconStack(PlayerEntity player, World world, KeyBinding binding);
+    public abstract Text getBindingName(KeyBinding binding);
     public static String getTranslationKey(Identifier identifier){
         return identifier.toTranslationKey("ability");
     }

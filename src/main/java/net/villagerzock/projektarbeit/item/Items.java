@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ShieldItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
@@ -47,7 +48,7 @@ public class Items {
         ;
         private final Item item;
         Weapons(Item item){
-            this.item = item;
+            this.item = register(name(),item);
         }
         @Override
         public Item getItem() {
@@ -60,11 +61,11 @@ public class Items {
         }
     }
     public enum Shields implements EnumItem {
-        HYLIAN_SHIELD(new Item(new FabricItemSettings()))
+        HYLIAN_SHIELD(new ShieldItem(new FabricItemSettings()))
         ;
         private final Item item;
         Shields(Item item){
-            this.item = item;
+            this.item = register(name(),item);
         }
         @Override
         public Item getItem() {
@@ -73,7 +74,7 @@ public class Items {
 
         @Override
         public ItemGroup getGroup() {
-            return ItemGroups.WEAPONS;
+            return ItemGroups.SHIELDS;
         }
     }
     public enum Ingredients implements EnumItem {
@@ -279,6 +280,8 @@ public class Items {
         //Loading the EnumItems
         loadEnum(Ingredients.class);
         loadEnum(KeyItems.class);
+        loadEnum(Weapons.class);
+        loadEnum(Shields.class);
 
         items.forEach((group, enumItems) -> {
             ItemGroupEvents.modifyEntriesEvent(ItemGroups.getKey(group)).register((fabricItemGroupEntries -> {
